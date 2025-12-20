@@ -24,6 +24,10 @@ if "selected_movie" not in st.session_state:
 if "breadcrumbs" not in st.session_state:
     st.session_state.breadcrumbs = []
 
+if "in_recommendation_flow" not in st.session_state:
+    st.session_state.in_recommendation_flow = False
+
+
 
 movie_list = sorted(df["Title"].unique())
 selected_movie = st.selectbox(
@@ -61,9 +65,7 @@ genre_filter = None if genre_filter == "All" else genre_filter
 # ------------------------
 # DISPLAY
 # ------------------------
-col_nav, col_clear = st.columns([4, 1])
-
-if st.session_state.breadcrumbs:
+if st.session_state.in_recommendation_flow and st.session_state.breadcrumbs:
     col_nav, col_clear = st.columns([4, 1])
 
     with col_nav:
@@ -73,10 +75,10 @@ if st.session_state.breadcrumbs:
         if st.button("🧹 Clear"):
             st.session_state.selected_movie = None
             st.session_state.breadcrumbs = []
+            st.session_state.in_recommendation_flow = False
             st.experimental_rerun()
 
     crumb_cols = st.columns(len(st.session_state.breadcrumbs))
-
     for i, movie in enumerate(st.session_state.breadcrumbs):
         with crumb_cols[i]:
             if st.button(movie, key=f"crumb_{i}"):
@@ -101,6 +103,7 @@ if selected_movie:
         st.markdown(f"**Genre:** {movie['Genre']}")
         st.markdown(f"**Language:** {movie['Original_Language']}")
         st.markdown(f"**Rating:** ⭐ {movie['Vote_Average']}")
+        st.markdown(f"**Votes:** 💬 {movie['Vote_Count']}")
 
     st.markdown("---")
     st.subheader("🎯 Recommended Movies")
@@ -118,7 +121,17 @@ if selected_movie:
             st.caption(f"{row['Title']} ({row['Similarity']}%)")
 
             # CLICK BUTTON
-            if st.button("View details", key=f"btn_{row['Title']}"):
+            if st.button("View details", key=f"rec_{row['Title']}"):
                 st.session_state.selected_movie = row["Title"]
+                st.session_state.in_recommendation_flow = True
+
+                # Add breadcrumb
+                if (
+                    not st.session_state.breadcrumbs
+                    or st.session_state.breadcrumbs[-1] != row["Title"]
+                ):
+                    st.session_state.breadcrumbs.append(row["Title"])
+
                 st.experimental_rerun()
+
 
