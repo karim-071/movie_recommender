@@ -52,7 +52,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     genre_filter = st.selectbox(
-        "Filter by Genre (optional)",
+        "Filter by Genre (Recommendations)",
         ["All"] + sorted(df["Genre"].dropna().unique())
     )
 
@@ -63,22 +63,28 @@ genre_filter = None if genre_filter == "All" else genre_filter
 # ------------------------
 col_nav, col_clear = st.columns([4, 1])
 
-with col_clear:
-    if st.button("🧹 Clear"):
-        st.session_state.selected_movie = None
-        st.session_state.breadcrumbs = []
-        st.experimental_rerun()
+if st.session_state.breadcrumbs:
+    col_nav, col_clear = st.columns([4, 1])
 
-with col_nav:
-    st.markdown("### 🧭 Navigation")
+    with col_nav:
+        st.markdown("### 🧭 Navigation")
+
+    with col_clear:
+        if st.button("🧹 Clear"):
+            st.session_state.selected_movie = None
+            st.session_state.breadcrumbs = []
+            st.experimental_rerun()
 
     crumb_cols = st.columns(len(st.session_state.breadcrumbs))
+
     for i, movie in enumerate(st.session_state.breadcrumbs):
         with crumb_cols[i]:
             if st.button(movie, key=f"crumb_{i}"):
                 st.session_state.selected_movie = movie
                 st.session_state.breadcrumbs = st.session_state.breadcrumbs[: i + 1]
                 st.experimental_rerun()
+
+
 
 
 if selected_movie:
