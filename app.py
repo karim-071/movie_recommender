@@ -57,14 +57,6 @@ st.markdown("""
 )
 
 
-st.markdown(
-    """
-
-    """,
-    unsafe_allow_html=True
-)
-
-
 @st.cache_data
 def load_data():
     df = pd.read_csv("data/dataset.csv")
@@ -85,9 +77,6 @@ st.title("🎥 Movie Recommendation System")
 # ------------------------
 if "selected_movie" not in st.session_state:
     st.session_state.selected_movie = None
-
-if "breadcrumbs" not in st.session_state:
-    st.session_state.breadcrumbs = []
 
 if "in_recommendation_flow" not in st.session_state:
     st.session_state.in_recommendation_flow = False
@@ -121,24 +110,9 @@ genre_filter = None if genre_filter == "All" else genre_filter
 # ------------------------
 # DISPLAY
 # ------------------------
-if st.session_state.in_recommendation_flow and st.session_state.breadcrumbs:
+if st.session_state.in_recommendation_flow:
     col_nav, col_clear = st.columns([4, 1])
 
-    with col_nav:
-        st.markdown("### 🧭 Navigation")
-
-    with col_clear:
-        if st.button("🧹 Clear"):
-            st.session_state.selected_movie = None
-            st.session_state.breadcrumbs = []
-            st.session_state.in_recommendation_flow = False
-
-    crumb_cols = st.columns(len(st.session_state.breadcrumbs))
-    for i, movie in enumerate(st.session_state.breadcrumbs):
-        with crumb_cols[i]:
-            if st.button(movie, key=f"crumb_{i}"):
-                st.session_state.selected_movie = movie
-                st.session_state.breadcrumbs = st.session_state.breadcrumbs[: i + 1]
 
 if selected_movie:
     movie = df[df["Title"] == selected_movie].iloc[0]
@@ -166,7 +140,8 @@ if selected_movie:
     with st.spinner("🔍 Finding similar movies you might like..."):
         recommendations = recommender.recommend_similar(
             st.session_state.selected_movie,
-            genre_filter=genre_filter
+            genre_filter=genre_filter,
+            top_n=10
         )
 
     cols = st.columns(5)
@@ -190,14 +165,7 @@ if selected_movie:
             if st.button("View details", key=f"rec_{row['Title']}"):
                 st.session_state.selected_movie = row["Title"]
                 st.session_state.in_recommendation_flow = True
-
-
-                if (
-                    not st.session_state.breadcrumbs
-                    or st.session_state.breadcrumbs[-1] != row["Title"]
-                ):
-                    st.session_state.breadcrumbs.append(row["Title"])
-
+                st.experimental_rerun()
 
 # ------------------------
 # ABOUT THIS APP
