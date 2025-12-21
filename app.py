@@ -132,7 +132,6 @@ if st.session_state.in_recommendation_flow and st.session_state.breadcrumbs:
             st.session_state.selected_movie = None
             st.session_state.breadcrumbs = []
             st.session_state.in_recommendation_flow = False
-            st.experimental_rerun()
 
     crumb_cols = st.columns(len(st.session_state.breadcrumbs))
     for i, movie in enumerate(st.session_state.breadcrumbs):
@@ -140,7 +139,6 @@ if st.session_state.in_recommendation_flow and st.session_state.breadcrumbs:
             if st.button(movie, key=f"crumb_{i}"):
                 st.session_state.selected_movie = movie
                 st.session_state.breadcrumbs = st.session_state.breadcrumbs[: i + 1]
-                st.experimental_rerun()
 
 if selected_movie:
     movie = df[df["Title"] == selected_movie].iloc[0]
