@@ -165,7 +165,7 @@ if selected_movie:
             if st.button("View details", key=f"rec_{row['Title']}"):
                 st.session_state.selected_movie = row["Title"]
                 st.session_state.in_recommendation_flow = True
-                st.experimental_rerun()
+                st.rerun()
 
 # ------------------------
 # ABOUT THIS APP
