@@ -200,7 +200,6 @@ if selected_movie:
                 ):
                     st.session_state.breadcrumbs.append(row["Title"])
 
-                st.experimental_rerun()
 
 # ------------------------
 # ABOUT THIS APP
