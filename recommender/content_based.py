@@ -33,6 +33,10 @@ class ContentBasedRecommender:
             self.df["combined_features"]
         )
 
+        self.feature_names = np.array(
+            self.vectorizer.get_feature_names_out()
+        )
+
         self.similarity = cosine_similarity(self.tfidf_matrix)
 
     # -------------------------------------------------
@@ -77,7 +81,7 @@ class ContentBasedRecommender:
             # Scoring
             # -------------------------
             popularity_boost = np.log1p(movie["Popularity"]) * 0.05
-            final_score = sim_score + popularity_boost
+            final_score = 0.85 * sim_score + 0.15 * popularity_boost
 
             results.append({
                 "index": i,
@@ -109,28 +113,42 @@ class ContentBasedRecommender:
 
         return pd.DataFrame(data)
 
+    def _top_tfidf_terms(self, idx, top_n=10):
+        row = self.tfidf_matrix[idx].toarray().flatten()
+        top_indices = row.argsort()[-top_n:][::-1]
+        return set(self.feature_names[top_indices])
+    
     # -------------------------------------------------
     # Explain recommendation
     # -------------------------------------------------
     def _explain(self, base, candidate):
         reasons = []
 
-        # Genre overlap
-        base_genres = set(str(base["Genre"]).split(","))
-        cand_genres = set(str(candidate["Genre"]).split(","))
-        common = base_genres & cand_genres
+        base_idx = base.name
+        cand_idx = candidate.name
 
-        if common:
-            reasons.append(f"🎭 Shared genres: {', '.join(common)}")
+        # Genre overlap
+        base_genres = set(g.strip() for g in str(base["Genre"]).split(","))
+        cand_genres = set(g.strip() for g in str(candidate["Genre"]).split(","))
+        common_genres = base_genres & cand_genres
+
+        if common_genres:
+            reasons.append(f"🎭 Shared genres: {', '.join(common_genres)}")
 
         # Language
         if base["Original_Language"] == candidate["Original_Language"]:
             reasons.append("🗣 Same original language")
 
-        # Story similarity (lightweight)
-        base_words = set(str(base["Overview"]).lower().split())
-        cand_words = set(str(candidate["Overview"]).lower().split())
-        if len(base_words & cand_words) > 5:
-            reasons.append("📖 Similar storyline")
+        #  TF-IDF keyword overlap
+        base_terms = self._top_tfidf_terms(base_idx, top_n=12)
+        cand_terms = self._top_tfidf_terms(cand_idx, top_n=12)
+
+        common_terms = base_terms & cand_terms
+
+        if common_terms:
+            reasons.append(
+                f"📖 Similar themes: {', '.join(list(common_terms)[:3])}"
+            )
 
         return reasons if reasons else ["Content similarity"]
+
