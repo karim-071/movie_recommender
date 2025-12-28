@@ -70,6 +70,18 @@ def load_recommender(df):
 df = load_data()
 recommender = load_recommender(df)
 
+# HELPERS
+def get_unique_genres(df):
+    genres = set()
+    for g in df["Genre"].dropna():
+        for token in g.split(","):
+            genres.add(token.strip())
+    return sorted(genres)
+
+def get_unique_languages(df):
+    return sorted(df["Original_Language"].dropna().unique())
+
+
 st.title("🎥 Movie Recommendation System")
 
 # ------------------------
@@ -100,12 +112,21 @@ st.session_state.selected_movie = selected_movie
 col1, col2 = st.columns(2)
 
 with col1:
+    genre_list = get_unique_genres(df)
     genre_filter = st.selectbox(
         "Filter by Genre (Recommendations)",
-        ["All"] + sorted(df["Genre"].dropna().unique())
+        ["All"] + genre_list
     )
 
 genre_filter = None if genre_filter == "All" else genre_filter
+
+with col2:
+    language_list = get_unique_languages(df)
+    language_filter = st.selectbox(
+        "Filter by Language (Recommendations)",
+        ["All"] + language_list
+    )
+    language_filter = None if language_filter == "All" else language_filter
 
 # ------------------------
 # DISPLAY
@@ -130,10 +151,12 @@ if selected_movie:
                 st.subheader(movie["Title"])
                 st.write(movie["Overview"])
                 st.markdown(f"**Genre:** {movie['Genre']}")
+                st.markdown(f"**Release Date:** {movie['Release_Date']}")
                 st.markdown(f"**Language:** {movie['Original_Language']}")
                 st.markdown(f"**Rating:** ⭐ {movie['Vote_Average']}")
                 st.markdown(f"**Votes:** 💬 {movie['Vote_Count']}")
 
+# RECOMMENDATIONS
     st.markdown("---")
     st.subheader("🎯 Recommended Movies")
 
@@ -141,31 +164,33 @@ if selected_movie:
         recommendations = recommender.recommend_similar(
             st.session_state.selected_movie,
             genre_filter=genre_filter,
+            language_filter=language_filter,
             top_n=10
         )
+    if recommendations.empty:
+        st.warning("No recommendations found. Try adjusting the filters.")
+    else:
+        cols = st.columns(5)
+        for i, row in recommendations.iterrows():
+            with cols[i % 5]:
+                st.markdown(
+                    f"""
+                    <div class="movie-card">
+                        <img src="{row['Poster_Url']}" class="movie-poster"/>
+                        <div class="movie-title">{row['Title']}</div>
+                        <div class="movie-score">{row['Similarity']}% Similar <br/></div>
+                        <ul class="movie-reason">
+                            {''.join([f'<li>{r}</li>' for r in row['Why']])}
+                        </ul>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
-    cols = st.columns(5)
-
-    for i, row in recommendations.iterrows():
-        with cols[i % 5]:
-            st.markdown(
-                f"""
-                <div class="movie-card">
-                    <img src="{row['Poster_Url']}" class="movie-poster"/>
-                    <div class="movie-title">{row['Title']}</div>
-                    <div class="movie-score">{row['Similarity']}% Similar <br/></div>
-                    <ul class="movie-reason">
-                        {''.join([f'<li>{r}</li>' for r in row['Why']])}
-                    </ul>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-            if st.button("View details", key=f"rec_{row['Title']}"):
-                st.session_state.selected_movie = row["Title"]
-                st.session_state.in_recommendation_flow = True
-                st.rerun()
+                if st.button("View details", key=f"rec_{row['Title']}"):
+                    st.session_state.selected_movie = row["Title"]
+                    st.session_state.in_recommendation_flow = True
+                    st.rerun()
 
 # ------------------------
 # ABOUT THIS APP
@@ -185,7 +210,7 @@ with st.expander("ℹ️ About this app"):
         '2. View detailed information such as poster, overview, genre, and rating.\n'
         '3. Browse recommended movies ranked by similarity score.\n'
         '4. Click on any recommended movie to explore its details and get further recommendations.\n'
-        '5. Use genre filters to refine recommendation results.'
+        '5. Use genre and language filters to refine recommendation results.'
     )
 
     st.markdown("### 🧠 How are recommendations generated?")
