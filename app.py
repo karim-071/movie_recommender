@@ -47,8 +47,10 @@ st.markdown("""
 .movie-reason {
     margin: 0;
     padding-left: 16px;
-    font-size: 12px;
+    font-size: 10px;
     color: rgba(128, 128, 128, 0.9);
+    height: 120px;
+    overflow-y: auto;
 }
 .movie-reason li {
     margin-bottom: 2px;
