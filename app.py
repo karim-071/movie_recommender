@@ -14,7 +14,7 @@ st.markdown("""
 }
 
 .movie-card {
-    background-color: #111;
+    background-color: var(--secondary-background-color);
     border-radius: 12px;
     padding: 12px;
     height: 520px;
@@ -35,6 +35,7 @@ st.markdown("""
     font-weight: 600;
     font-size: 14px;
     margin-top: 6px;
+    color: var(--text-color);
 }
 .movie-score {
     font-size: 13px;
@@ -47,7 +48,7 @@ st.markdown("""
     margin: 0;
     padding-left: 16px;
     font-size: 12px;
-    color: #bbb;
+    color: rgba(128, 128, 128, 0.9);
 }
 .movie-reason li {
     margin-bottom: 2px;
