@@ -1,4 +1,9 @@
 # 🎬 Movie Recommendation System
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Streamlit](https://img.shields.io/badge/Streamlit-Web%20App-red)
+![Scikit-learn](https://img.shields.io/badge/Scikit--learn-ML-orange)
+![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-purple)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 A **content-based movie recommendation system** built with *Python*, *Streamlit*, and *scikit-learn*. The application suggests movies similar to a selected title based on *overview*, *genre*, and *original language* with an *interactive UI*, *explainable recommendations*, and *genre & language filters*.
 
